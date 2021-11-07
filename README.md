@@ -13,6 +13,7 @@ at https://developer.spotify.com/community/news/2021/05/27/improving-the-develop
 In addition, the service requires Beautiful Soup, spotipy, requests, sys packages installed.
 
 **Running the service**
+
 To start a server locally in terminal enter the command:
 python3 spotify_service.py
 
