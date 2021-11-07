@@ -6,11 +6,15 @@ import spotipy
 from bs4 import BeautifulSoup
 from spotipy.oauth2 import SpotifyOAuth
 
+# Parse config file "config.cfg"
 config = configparser.ConfigParser()
 config.read('config.cfg')
 client_id = config.get('SPOTIFY', 'CLIENT_ID')
 client_secret = config.get('SPOTIFY', 'CLIENT_SECRET')
+# Setting scope requires for creating a playlist
 scope = 'playlist-modify-public'
+# Authenticate to Spotify
+# redirect_uri is launched with the window where user gives permission for the service to use their Spotify data
 spotify = spotipy.Spotify(auth_manager=SpotifyOAuth(scope=scope, client_id=client_id, client_secret=client_secret,
                                                     redirect_uri='http://localhost:8888/callback'))
 
