@@ -16,7 +16,7 @@ scope = 'playlist-modify-public'
 # Authenticate to Spotify
 # redirect_uri is launched with the window where user gives permission for the service to use their Spotify data
 spotify = spotipy.Spotify(auth_manager=SpotifyOAuth(scope=scope, client_id=client_id, client_secret=client_secret,
-                                                    redirect_uri='http://localhost:8888/callback'))
+                                                    redirect_uri='http://localhost:8888/'))
 
 
 def get_user_id():
