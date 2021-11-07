@@ -1,9 +1,9 @@
 The Spotify service is currently in a development mode and was not yet approved by Spotify. 
 In order to use the service:
 1. Create an app in Spotify Developer dashboard https://developer.spotify.com/dashboard/
-2. Add client id and client secret from the Dashboard to config.cfg file in the Spotify Service
-3. Open newly created app in the Dashboard, select "Edit Settings" and set redirect_uri to 'http://localhost:8888/'. Save it
-4. Select "Users and access" and add a Spotify account.
+2. Open newly created app and add client id and client secret from the Dashboard to config.cfg file in the Spotify Service
+3. In the app in the Dashboard, select "Edit Settings" and set redirect_uri to 'http://localhost:8888/'. Save it
+4. Select "Users and access" and add a Spotify account. 
 
 More information about development mode for Spotify apps can be found 
 at https://developer.spotify.com/community/news/2021/05/27/improving-the-developer-and-user-experience-for-third-party-apps/
