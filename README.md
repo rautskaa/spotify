@@ -1,3 +1,5 @@
+**Setup**
+
 The Spotify service is currently in a development mode and was not yet approved by Spotify. 
 In order to use the service:
 1. Create an app in Spotify Developer dashboard https://developer.spotify.com/dashboard/
@@ -8,8 +10,13 @@ In order to use the service:
 More information about development mode for Spotify apps can be found 
 at https://developer.spotify.com/community/news/2021/05/27/improving-the-developer-and-user-experience-for-third-party-apps/
 
+In addition, the service requires Beautiful Soup, spotipy, requests, sys packages installed.
+
+**Running the service**
 To start a server locally in terminal enter the command:
 python3 spotify_service.py
+
+**Endpoints**
 
 Endpoint for getting top tracks per genre from Beatport that also exist on Spotify:
 Request method: GET
