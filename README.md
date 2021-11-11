@@ -21,9 +21,9 @@ python3 spotify_service.py
 
 Endpoint for getting top tracks per genre from Beatport that also exist on Spotify:
 Request method: GET
-Endpoint: http://127.0.0.1:5000/get_top_tracks
+Endpoint: http://127.0.0.1:5000/top-tracks
 Parameter: genre
-Example: http://127.0.0.1:5000/get_top_tracks?genre=house
+Example: http://127.0.0.1:5000/top-tracks?genre=house
 Returns: top tracks as JSON objects array
 
 Endpoint for creating a playlist on Spotify with top tracks per genre from Beatport that also exist on Spotify:
