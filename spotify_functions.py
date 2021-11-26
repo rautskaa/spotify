@@ -5,18 +5,19 @@ import requests
 import spotipy
 from bs4 import BeautifulSoup
 from spotipy.oauth2 import SpotifyOAuth
+from genres import get_genres_num, get_genres_title
 
+
+# Authentication for Spotify API use
 config = configparser.ConfigParser()
 config.read('config.cfg')
-client_id = config.get('SPOTIFY', 'CLIENT_ID')
-client_secret = config.get('SPOTIFY', 'CLIENT_SECRET')
-# Setting scope requires for creating a playlist
+id = config.get('SPOTIFY', 'CLIENT_ID')
+secret = config.get('SPOTIFY', 'CLIENT_SECRET')
 scope = 'playlist-modify-public'
-# Authenticate to Spotify
 # redirect_uri launches browser for user to give permission to use their Spotify data
-spotify = spotipy.Spotify(auth_manager=SpotifyOAuth(scope=scope, client_id=client_id,
-                                                    client_secret=client_secret,
-                                                    redirect_uri='http://localhost:8888/'))
+uri = 'http://localhost:8888/'
+auth_manager = SpotifyOAuth(scope=scope, client_id=id, client_secret=secret, redirect_uri=uri)
+spotify = spotipy.Spotify(auth_manager=auth_manager)
 
 
 def get_user_id():
@@ -54,97 +55,22 @@ def create_playlist(genre):
     print("Creating a playlist on Spotify...")
     user_id = get_user_id()
     genre_title = get_genres_title()
-    playlist_title = genre_title[genre].upper() + " TOP TRACKS "
+    selected_genre = ''.join(genre_title[genre])
+    playlist_title = selected_genre.upper() + " TOP TRACKS "
     result = spotify.user_playlist_create(user_id, playlist_title,
                                           public=True)
     return result
-
-
-def get_genres():
-    """Get dictionary of all supported genres on Beatport
-      :return genres
-      """
-    genres = {'house': 5,
-              'deep-house': 12,
-              'afro-house': 89,
-              'breaks-breakbeat-uk-bass': 9,
-              'bass-club': 85,
-              'bass-house': 91,
-              '140-deep-dubstep-grime': 95,
-              'dance-electro-pop': 39,
-              'dj-tools': 16,
-              'drum-bass': 1,
-              'dubstep': 18,
-              'electro-classic-detroit-modern': 94,
-              'electronica': 3,
-              'funky-house': 81,
-              'hard-dance-hardcore': 8,
-              'hard-techno': 2,
-              'indie-dance': 37,
-              'jackin-house': 97,
-              'mainstage': 96,
-              'melodic-house-techno': 90,
-              'minimal-deep-tech': 14,
-              'nu-disco-disco': 50,
-              'organic-house-downtempo': 93,
-              'progressive-house': 15,
-              'psy-trance': 13,
-              'tech-house': 11,
-              'techno-peak-time-driving': 6,
-              'techno-raw-deep-hypnotic': 92,
-              'trance': 7,
-              'trap-wave': 38,
-              'uk-garage-bassline': 86}
-    return genres
-
-
-def get_genres_title():
-    """Get dictionary of titles all supported genres on Beatport
-    :return genres
-    """
-    genres = {'house': 'house',
-              'deep-house': 'deep house',
-              'afro-house': 'afro house',
-              'breaks-breakbeat-uk-bass': 'breaks / breakbeat / uk bass',
-              'bass-club': 'bass / club',
-              'bass-house': 'bass house',
-              '140-deep-dubstep-grime': '140 / deep dubstep / grime',
-              'dance-electro-pop': 'dance / electro pop',
-              'dj-tools': 'dj tools',
-              'drum-bass': 'drum & bass',
-              'dubstep': 'dubstep',
-              'electro-classic-detroit-modern': 'electro (classic / detroit / modern)',
-              'electronica': 'electronica',
-              'funky-house': 'funky house',
-              'hard-dance-hardcore': 'hard dance / hardcore',
-              'hard-techno': 'hard techno',
-              'indie-dance': 'indie dance',
-              'jackin-house': 'jackin house',
-              'mainstage': 'mainstage',
-              'melodic-house-techno': 'melodic house & techno',
-              'minimal-deep-tech': 'minimal / deep tech',
-              'nu-disco-disco': 'nu disco / disco',
-              'organic-house-downtempo': 'organic house / downtempo',
-              'progressive-house': 'progressive house',
-              'psy-trance': 'psy-trance',
-              'tech-house': 'tech house',
-              'techno-peak-time-driving': 'techno (peak time / driving)',
-              'techno-raw-deep-hypnotic': 'techno (raw / deep / hypnotic)',
-              'trance': 'trance',
-              'trap-wave': 'trap / wave',
-              'uk-garage-bassline': 'uk garage / bassline'}
-    return genres
-
 
 def get_beatport_url(genre):
     """Get Beatport url with top tracks
     :param url, example "https://www.beatport.com/genre/deep-house/12/top-100"
     :return url
     """
-    genres = get_genres()
+    genres = get_genres_num()
     if genre in genres:
-        converted_num = str(genres[genre])
-        url = "https://www.beatport.com/genre/" + genre + "/" + converted_num + "/" + "top-100"
+        num_as_str = str(genres[genre])
+        num = num_as_str.replace("{","").replace("}", "")
+        url = "https://www.beatport.com/genre/" + genre + "/" + num + "/" + "top-100"
         print("=== Beatport URL with top tracks for " + genre + " ===")
         print(url)
         return url
@@ -187,13 +113,13 @@ def get_top_tracks(genre):
         result_dict[song_name] = artist
         song_data = []
         song_data.extend((track_ids, songs, artists))
-        append_matched_song(song_name, artist, song_data)
+        search_song(song_name, artist, song_data)
     json_data = convert_to_json(songs, artists, track_ids)
     return json_data
 
 
-def append_matched_song(song_name, artist, song_data):
-    """Append song to result if Beatport song exists in Spotify catalogue
+def search_song(song_name, artist, song_data):
+    """Append song to result if Beatport song exists in Spotify catalog
     :param song_name
     :param artist
     :param song_data"""
