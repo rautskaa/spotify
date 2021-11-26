@@ -6,7 +6,6 @@ import spotipy
 from bs4 import BeautifulSoup
 from spotipy.oauth2 import SpotifyOAuth
 
-# Parse config file "config.cfg"
 config = configparser.ConfigParser()
 config.read('config.cfg')
 client_id = config.get('SPOTIFY', 'CLIENT_ID')
@@ -14,8 +13,9 @@ client_secret = config.get('SPOTIFY', 'CLIENT_SECRET')
 # Setting scope requires for creating a playlist
 scope = 'playlist-modify-public'
 # Authenticate to Spotify
-# redirect_uri is launched with the window where user gives permission for the service to use their Spotify data
-spotify = spotipy.Spotify(auth_manager=SpotifyOAuth(scope=scope, client_id=client_id, client_secret=client_secret,
+# redirect_uri launches browser for user to give permission to use their Spotify data
+spotify = spotipy.Spotify(auth_manager=SpotifyOAuth(scope=scope, client_id=client_id,
+                                                    client_secret=client_secret,
                                                     redirect_uri='http://localhost:8888/'))
 
 
@@ -35,15 +35,14 @@ def create_playlist_with_top_tracks(genre):
     """
     playlist_result = create_playlist(genre)
     playlist_id = playlist_result['id']
-    top_tracks = get_top_tracks(genre)
+    print("Finding top tracks on Spotify for genre", genre, "from Beatport...")
+    top_tracks = get_top_tracks(genre)  # Load JSON string into a dictionary
     # Add items to a playlist when looping through json and getting tracks
-    # Load JSON string into a dictionary
     json_dict = json.loads(top_tracks)
     for track in json_dict:
         track_id = track['track_id']
         spotify.playlist_add_items(playlist_id, track_id, position=None)
-    print("=== Created a playlist for " + genre + " on Spotify ===")
-    print(playlist_result)
+    print("=== Created a playlist for " + genre + " on Spotify ===\n", playlist_result)
     return playlist_result
 
 
@@ -63,7 +62,7 @@ def create_playlist(genre):
 
 def get_genres():
     """Get dictionary of all supported genres on Beatport
-      :return dictionary of genres
+      :return genres
       """
     genres = {'house': 5,
               'deep-house': 12,
@@ -101,7 +100,7 @@ def get_genres():
 
 def get_genres_title():
     """Get dictionary of titles all supported genres on Beatport
-    :return title
+    :return genres
     """
     genres = {'house': 'house',
               'deep-house': 'deep house',
@@ -160,6 +159,7 @@ def convert_to_json(songs, artists, track_ids):
      """
     data = [{"Song": s, "Artist": a, "track_id": t} for s, a, t in zip(songs, artists, track_ids)]
     json_data = json.dumps(data)
+    print("=== Found top tracks on Spotify from Beatport ===\n" + json_data)
     return json_data
 
 
@@ -179,36 +179,36 @@ def get_top_tracks(genre):
      :param genre
      :return array of JSON objects with top tracks (song, artist, track_id)
      """
-    print("Finding top tracks on Spotify for genre", genre, "from Beatport...")
     result_dict = {}
-    result_top_tracks = {}
-    url = get_beatport_url(genre)
-    songs = []
-    artists = []
-    track_ids = []
-
-    results = scrap_tracks_from_beatport(url)
+    songs, artists, track_ids = ([] for i in range(3))
+    results = scrap_tracks_from_beatport(get_beatport_url(genre))
     for i in range(0, 100):
-        song_name = results[i]['data-ec-name']
-        artist = results[i]['data-ec-d1']
+        song_name, artist = results[i]['data-ec-name'], results[i]['data-ec-d1']
         result_dict[song_name] = artist
-        # Search song in spotify catalog with exact match
-        search_result = spotify.search(song_name, limit=10, offset=0, type='track', market=None)
-        prev_track = ""
-        for item in search_result["tracks"]["items"]:
-            if item["name"] == song_name and prev_track != item["name"]:
-                for artist_ in item["artists"]:
-                    # If artist matches the song name, get track id
-                    if artist_["name"] == artist:
-                        track_id = [item["id"]]
-                        track_ids.append(track_id)
-                        songs.append(song_name)
-                        artists.append(artist)
-                        prev_track = item["name"]
+        song_data = []
+        song_data.extend((track_ids, songs, artists))
+        append_matched_song(song_name, artist, song_data)
     json_data = convert_to_json(songs, artists, track_ids)
-    print("=== Found top tracks on Spotify from Beatport ===")
-    print(json_data)
     return json_data
+
+
+def append_matched_song(song_name, artist, song_data):
+    """Append song to result if Beatport song exists in Spotify catalogue
+    :param song_name
+    :param artist
+    :param song_data"""
+    # Search song in spotify catalog with exact match
+    spotify_result = spotify.search(song_name, limit=10, offset=0, type='track', market=None)
+    prev_track = ""
+    track_ids, songs, artists = song_data[0], song_data[1], song_data[2]
+    for item in spotify_result["tracks"]["items"]:
+        if item["name"] == song_name and prev_track != item["name"]:
+            for artist_ in item["artists"]:
+                if artist_["name"] == artist:  # If artist matches the song name, append to result
+                    track_id, prev_track = [item["id"]], item["name"]
+                    track_ids.append(track_id)
+                    songs.append(song_name)
+                    artists.append(artist)
 
 
 if __name__ == '__main__':
